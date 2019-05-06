@@ -1,0 +1,13 @@
+{
+  "name": "habbinessbot",
+  "version": "1.0.0",
+  "description": "all about habbiness",
+  "main": "habbinessbot.js",
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "adhan" : "3.0.0"
+  },
+  "scripts": {
+    "start": "node habbinessbot.js"
+  }
+}
