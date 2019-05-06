@@ -136,4 +136,4 @@ process.on("unhandledRejection", err => {
   console.error("Uncaught Promise Error: \n" + err.stack);
 });
 
-bot.login(process.env.BOT_TOKEN);
+bot.login(process.env.HABBINESS_BOT_TOKEN);

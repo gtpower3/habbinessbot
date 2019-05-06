@@ -4,8 +4,8 @@
   "description": "all about habbiness",
   "main": "habbinessbot.js",
   "dependencies": {
-    "discord.js": "^11.4.2",
-    "adhan" : "3.0.0"
+    "adhan": "^3.0.0",
+    "discord.js": "^11.4.2"
   },
   "scripts": {
     "start": "node habbinessbot.js"
