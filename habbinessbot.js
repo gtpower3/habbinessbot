@@ -6,7 +6,7 @@
 const { Client, RichEmbed } = require('discord.js');
 const bot = new Client();
 
-//nootbot.json
+//habbinessbot.json
 const config = require('./habbinessbot.json');
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +70,17 @@ function now()
   return `${hours}:${minutes}:${seconds} ${suffix} @ ${date}/${month}/${year}`;
 }
 
+function dayToDate(day){
+  if(day == 0) return "Sunday";
+  else if(day == 1) return "Monday";
+  else if(day == 2) return "Tuesday";
+  else if(day == 3) return "Wednesday";
+  else if(day == 4) return "Thursday";
+  else if(day == 5) return "Friday";
+  else if(day == 6) return "Saturday";
+  else return "N/A";
+}
+
 function isLetter(str) {
   return str.length === 1 && str.match(/[a-z]/i);
 }
@@ -98,16 +109,200 @@ function getRandomIntInclusive(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
 }
 
+function printTable(TTArray, channel){
+  var res = "+ A B C\n";
+  for (var i = 0; i < 3; i++) {
+    res = res + i + " ";
+    for (var j = 0; j < 3; j++) {
+        res = res + TTArray[i][j] + " ";
+    }
+    res = res + "\n";
+  }
+  channel.send(`\`\`\`${res}\`\`\``);
+}
+
+function playTTT(channel){
+  var TTArray = new Array(3);
+  var isRunning = false;
+
+  //declare and initialise tic tac toe table
+  for (var i = 0; i < TTArray.length; i++)
+    TTArray[i] = [];
+
+  for (var i = 0; i < 3; i++) {
+    for (var j = 0; j < 3; j++) {
+        TTArray[i][j] = '-';
+    }
+  }
+  printTable(TTArray, channel);
+
+  while(isRunning){
+
+  }
+}
+
 function handleCMD(msg)
 {
-  msg.channel.startTyping();
-  var input = msg.content.toUpperCase();
+
+  var cmdInput = msg.content.split('_')[1].split(' ')[0].toUpperCase();
+  console.log(cmdInput);
+
+  if(cmdInput == "PING"){
+    msg.reply("pong!");
+  } else //PING
+
+  if(cmdInput == "EVAL")
+  {
+    if(msg.author.id !== gtid) return;
+    let code = msg.content.slice(5);
+    try
+    {
+      eval(code);
+    }
+    catch (e)
+    {
+      msg.channel.send("```" + e + "```");
+    }
+  } else //eval
+
+  if(cmdInput == "COLORIZE")
+  {
+    msg.delete();
+    console.log("colorize initialising...");
+    var member = msg.member;
+    var role = member.roles.find(role => role.name == member.id);
+
+    if(role == null) {
+      msg.guild.createRole({
+        name: member.id,
+        color: 'RANDOM',
+      })
+      .then(role => {
+        console.log(`Created new role with name ${role.name} and color ${role.color}`);
+
+        //set created role to a member
+        member.addRole(role);
+      })
+      .catch(console.error);
+    }
+    else{
+      // Set the color of a role
+      role.setColor('RANDOM')
+      .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
+      .catch(console.error);
+    }
+  }
+
+  if(cmdInput == "COLORIZEALL")
+  {
+    msg.delete();
+    console.log("colorize all initialising...");
+
+    //check if owner is calling this cmd
+    if(msg.author.id !== gtid) return;
+
+    //fetch all roles in guild
+    var guildroles = msg.guild.roles;
+    console.log(`guildroles fetched of size: ${guildroles.size}`)
+
+    //fetch guild members
+    var guildmembers = msg.guild.members.filter(member => member.user.bot == false);
+    console.log(`guildmembers fetched of size: ${guildmembers.size}`)
+
+    /*
+    //check if roles already exist
+    if(guildroles.some((role) => role.name == msg.author.id)){
+      console.log("colorized roles detected");
+
+      //if roles do exist, delete the roles
+      for(let value of guildmembers.values())
+      {
+        var roleToEdit = value.roles.find(role => role.name == value.id);
+        // Set the color of a role
+        roleToEdit.setColor('RANDOM')
+        .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
+        .catch(console.error);
+      }
+      return;
+    }*/
+
+    var newRoles = "";
+
+    for(let value of guildmembers.values())
+    {
+      if(value.roles.some(role => role.name == value.id)){ //if member already has colored role
+        var roleToEdit = value.roles.find(role => role.name == value.id);
+        // Set the color of a role
+        roleToEdit.setColor('RANDOM')
+        .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
+        .catch(console.error);
+      }
+      else {
+        //create a role for each member with a random color
+        msg.guild.createRole({
+          name: value.id,
+          color: 'RANDOM',
+        })
+        .then(role => {
+          console.log(`Created new role with name ${role.name} and color ${role.color}`);
+
+          //set created role to a member
+          value.addRole(role);
+          //newRoles = newRoles + role.toString();
+          //console.log(`newRoles: ${newRoles}`);
+        })
+        .catch(console.error);
+      }
+    }
+
+    //msg.channel.send(newRoles);
+
+  } else //colorizeall
+
+  if(cmdInput == "TIC"){
+    console.log("entered tic");
+    var players = [];
+    players.push(msg.author.id);
+
+    msg.channel.send(`who wants to play with ${msg.author}? (say "me")`);
+
+/*
+    const filter = m => m.content.toUpperCase() == "ME";
+    const collector = msg.channel.createMessageCollector(filter, { time: 60 * 1000 });
+    collector.on('collect', m => console.log(`Collected ${m.content}`));
+    collector.on('end', collected => console.log(`Collected ${collected.size} items`));
+*/
+
+    const collector = msg.channel.createMessageCollector(
+     m => (m.content.toUpperCase() == "ME"),
+     { time: 60*1000 });
+
+    collector.on('collect', m => {
+      if(m.content == "-1" && m.author.id === gtid) return collector.stop();
+      if(players.includes(m.author.id)) return m.reply("ur already a player u idiot");
+      else{
+        m.reply(`${m.member.displayName} is in!`);
+        collector.stop();
+      }
+    });
+
+    collector.on('end', () => {
+      msg.channel.send("starting game...");
+      playTTT(msg.channel);
+    });
+  }
+
 
 }
+
 
 bot.on("ready", () => {
   console.time("ready");
   console.log(`HABBINESS READY ${now()}`);
+
+  // Set the client user's presence
+  bot.user.setPresence({ game: { name: '_colorize to change ur color' }, status: 'dnd' })
+  .catch(console.error);
   console.timeEnd("ready");
 });//ready
 
@@ -126,9 +321,13 @@ bot.on("resume", num => {
 bot.on("message", msg => {
   if(msg.author.id == habbinessbotid) return;
 
-  let input = msg.content.toUpperCase();
+  if(msg.content.startsWith(prefix))
+  {
+    msg.channel.startTyping();
+    handleCMD(msg);
+    msg.channel.stopTyping(true);
+  }
 
-  if(msg.content.startsWith(prefix)) handleCMD(msg);
 });
 
 process.on("unhandledRejection", err => {
