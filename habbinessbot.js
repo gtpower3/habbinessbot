@@ -142,7 +142,6 @@ function playTTT(channel){
 }
 
 function colorize(member){
-  var member = msg.member;
   var role = member.roles.find(role => role.name == member.id);
 
   if(role == null) {
