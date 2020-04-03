@@ -141,6 +141,31 @@ function playTTT(channel){
   }
 }
 
+function colorize(member){
+  var member = msg.member;
+  var role = member.roles.find(role => role.name == member.id);
+
+  if(role == null) {
+    member.guild.createRole({
+      name: member.id,
+      color: 'RANDOM',
+    })
+    .then(role => {
+      console.log(`Created new role with name ${role.name} and color ${role.color}`);
+
+      //set created role to a member
+      member.addRole(role);
+    })
+    .catch(console.error);
+  }
+  else{
+    // Set the color of a role
+    role.setColor('RANDOM')
+    .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
+    .catch(console.error);
+  }
+}
+
 function handleCMD(msg)
 {
 
@@ -169,28 +194,7 @@ function handleCMD(msg)
   {
     msg.delete();
     console.log("colorize initialising...");
-    var member = msg.member;
-    var role = member.roles.find(role => role.name == member.id);
-
-    if(role == null) {
-      msg.guild.createRole({
-        name: member.id,
-        color: 'RANDOM',
-      })
-      .then(role => {
-        console.log(`Created new role with name ${role.name} and color ${role.color}`);
-
-        //set created role to a member
-        member.addRole(role);
-      })
-      .catch(console.error);
-    }
-    else{
-      // Set the color of a role
-      role.setColor('RANDOM')
-      .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
-      .catch(console.error);
-    }
+    colorize(msg.member);
   }
 
   if(cmdInput == "COLORIZEALL")
@@ -203,30 +207,11 @@ function handleCMD(msg)
 
     //fetch all roles in guild
     var guildroles = msg.guild.roles;
-    console.log(`guildroles fetched of size: ${guildroles.size}`)
+    console.log(`guildroles fetched of size: ${guildroles.size}`);
 
     //fetch guild members
     var guildmembers = msg.guild.members.filter(member => member.user.bot == false);
-    console.log(`guildmembers fetched of size: ${guildmembers.size}`)
-
-    /*
-    //check if roles already exist
-    if(guildroles.some((role) => role.name == msg.author.id)){
-      console.log("colorized roles detected");
-
-      //if roles do exist, delete the roles
-      for(let value of guildmembers.values())
-      {
-        var roleToEdit = value.roles.find(role => role.name == value.id);
-        // Set the color of a role
-        roleToEdit.setColor('RANDOM')
-        .then(role => console.log(`Set color of ${role.name} to ${role.color}`))
-        .catch(console.error);
-      }
-      return;
-    }*/
-
-    var newRoles = "";
+    console.log(`guildmembers fetched of size: ${guildmembers.size}`);
 
     for(let value of guildmembers.values())
     {
@@ -248,14 +233,10 @@ function handleCMD(msg)
 
           //set created role to a member
           value.addRole(role);
-          //newRoles = newRoles + role.toString();
-          //console.log(`newRoles: ${newRoles}`);
         })
         .catch(console.error);
       }
     }
-
-    //msg.channel.send(newRoles);
 
   } else //colorizeall
 
@@ -295,7 +276,6 @@ function handleCMD(msg)
 
 }
 
-
 bot.on("ready", () => {
   console.time("ready");
   console.log(`HABBINESS READY ${now()}`);
@@ -327,8 +307,11 @@ bot.on("message", msg => {
     handleCMD(msg);
     msg.channel.stopTyping(true);
   }
-
 });
+
+bot.on("guildMemberAdd", member => {
+  colorize(member);
+}); //resume
 
 process.on("unhandledRejection", err => {
   if(!err) return console.error("Unknown promise error");
